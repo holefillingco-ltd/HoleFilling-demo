@@ -64,10 +64,25 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        for table in tableCollection {
+        
+
+
+        var gestures = Array<UITapGestureRecognizer>()
+        for _ in 0..<tableCollection.count {
+            let tapgesture:UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.hello(_:)))
+            gestures.append(tapgesture)
+        }
+
+        for (index, table) in tableCollection.enumerated() {
+            table.addGestureRecognizer(gestures[index])
         }
     }
+    
+    @objc func hello(_ sender: UITapGestureRecognizer) {
+            print("タップ")
+    }
 
+    
 
 }
 
