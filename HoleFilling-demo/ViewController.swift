@@ -16,7 +16,7 @@ class ViewController: UIViewController {
     
     
     
-    struct Table {
+    class Table {
         var id:Int
         var member:Int
         var type:TableType
@@ -33,12 +33,12 @@ class ViewController: UIViewController {
             case table = "テーブル席", counter = "カウンター席", privateRoom = "個室", zasiki = "お座敷", sofa = "ソファー席"
         }
         enum Status:String {
-            case vacan = "空席", fill = "在席", accounting = "会計中", check = "会計済み"
+            case vacan = "空席", fill = "在席中", accounting = "会計中", check = "会計済み"
         }
         
-        mutating func changeStatus(_ status:Status) {
-            self.status = status
-        }
+//        func changeStatus(_ status:Status) {
+//            self.status = status
+//        }
         
     }
     
@@ -79,40 +79,62 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-
+        // 各View(table)へtapGestureの付与
         var gestures = Array<UITapGestureRecognizer>()
         for _ in 0..<tableCollection.count {
             let tapgesture:UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.tapGesture(_:)))
             gestures.append(tapgesture)
         }
-
         for (index, table) in tableCollection.enumerated() {
             table.addGestureRecognizer(gestures[index])
         }
+        
+//        for table in tableCollection {
+//            let tableNo = table.restorationIdentifier
+//            tableColor(table, tableNo!)
+//        }
     }
     
+    func changeTableStatus(_ changeTable:Table, _ status:Table.Status, _ tableView:UIView, _ tableNoStr:String) {
+        changeTable.status = status
+        if let tableNo = Int(tableNoStr) {
+            let tables = Tables.filter{$0.id == tableNo}
+            let table = tables.first!
+            switch table.status {
+            case .vacan:
+                tableView.backgroundColor = UIColor.lightGray
+            case .fill:
+                tableView.backgroundColor = UIColor.green
+            case .accounting:
+                tableView.backgroundColor = UIColor.orange
+            case .check:
+                tableView.backgroundColor = UIColor.red
+            }
+        }
+    }
+
     @objc func tapGesture(_ sender: UITapGestureRecognizer) {
         let tableNo:String = sender.view?.restorationIdentifier ?? "error"
         if let str = Int(tableNo) {
             let tables = Tables.filter{$0.id == str}
-            var table = tables.first!
+            let table = tables.first!
             let tableMember = String(table.member)
             let tableType = table.type.rawValue
             let tableInfo = tableMember + "名 : " + tableType
             
             let alert = UIAlertController(title: tableInfo, message: table.status.rawValue, preferredStyle: .alert)
             alert.addAction(
-                UIAlertAction(title: "空席", style: .default, handler: {(action) -> Void in table.changeStatus(ViewController.Table.Status.vacan)})
+                UIAlertAction(title: "空席", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.vacan, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
                 UIAlertAction(title: "在籍中", style: .default, handler: {(action) -> Void in
-                    table.changeStatus(ViewController.Table.Status.fill)})
+                    self.changeTableStatus(table, ViewController.Table.Status.fill, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
-                UIAlertAction(title: "会計中", style: .default, handler: {(action) -> Void in table.changeStatus(ViewController.Table.Status.accounting)})
+                UIAlertAction(title: "会計中", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.accounting, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
-                UIAlertAction(title: "会計済み", style: .default, handler: {(action) -> Void in table.changeStatus(ViewController.Table.Status.check)})
+                UIAlertAction(title: "会計済み", style: .destructive, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.check, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
                 UIAlertAction(title: "キャンセル", style: .cancel, handler: nil)
@@ -123,7 +145,6 @@ class ViewController: UIViewController {
         }
     }
 
-    
 
 }
 
