@@ -80,6 +80,8 @@ class ViewController: UIViewController {
         for (index, table) in tableCollection.enumerated() {
             table.addGestureRecognizer(gestures[index])
         }
+        
+        self.createTextFromString(aString: "テスト", saveToDocumentsWithFileName: "TableLog.text")
     }
     
     func changeTableStatus(_ changeTable:Table, _ status:Table.Status, _ tableView:UIView, _ tableNoStr:String) {
@@ -129,6 +131,21 @@ class ViewController: UIViewController {
             self.present(alert, animated: true)
         } else {
             return
+        }
+    }
+    
+    func createTextFromString(aString: String, saveToDocumentsWithFileName fileName: String) {
+        
+        if let documentDirectoryFileURL = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true).last {
+            
+            let targetTextFilePath = documentDirectoryFileURL + "/" + fileName
+            
+            do {
+                try aString.write(toFile: targetTextFilePath, atomically: true, encoding: String.Encoding.utf8)
+                print(targetTextFilePath)
+            } catch let error as NSError {
+                print("failed to write: \(error)")
+            }
         }
     }
     
