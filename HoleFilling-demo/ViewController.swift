@@ -12,10 +12,6 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    
-    
-    
-    
     class Table {
         var id:Int
         var member:Int
@@ -35,11 +31,7 @@ class ViewController: UIViewController {
         enum Status:String {
             case vacan = "空席", fill = "在席中", accounting = "会計中", check = "会計済み"
         }
-        
-//        func changeStatus(_ status:Status) {
-//            self.status = status
-//        }
-        
+
     }
     
     var Tables = [
@@ -88,11 +80,6 @@ class ViewController: UIViewController {
         for (index, table) in tableCollection.enumerated() {
             table.addGestureRecognizer(gestures[index])
         }
-        
-//        for table in tableCollection {
-//            let tableNo = table.restorationIdentifier
-//            tableColor(table, tableNo!)
-//        }
     }
     
     func changeTableStatus(_ changeTable:Table, _ status:Table.Status, _ tableView:UIView, _ tableNoStr:String) {
@@ -127,7 +114,7 @@ class ViewController: UIViewController {
                 UIAlertAction(title: "空席", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.vacan, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
-                UIAlertAction(title: "在籍中", style: .default, handler: {(action) -> Void in
+                UIAlertAction(title: "在席中", style: .default, handler: {(action) -> Void in
                     self.changeTableStatus(table, ViewController.Table.Status.fill, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
@@ -139,12 +126,12 @@ class ViewController: UIViewController {
             alert.addAction(
                 UIAlertAction(title: "キャンセル", style: .cancel, handler: nil)
             )
-            self.present(alert, animated: true, completion: {print(table)})
+            self.present(alert, animated: true)
         } else {
             return
         }
     }
-
+    
 
 }
 
