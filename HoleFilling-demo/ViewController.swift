@@ -80,6 +80,8 @@ class ViewController: UIViewController {
         for (index, table) in tableCollection.enumerated() {
             table.addGestureRecognizer(gestures[index])
         }
+        
+        self.createTextFromString(aString: "Log集計開始\n", saveToDocumentsWithFileName: "TableLog.text")
     }
     
     func changeTableStatus(_ changeTable:Table, _ status:Table.Status, _ tableView:UIView, _ tableNoStr:String) {
@@ -87,15 +89,26 @@ class ViewController: UIViewController {
         if let tableNo = Int(tableNoStr) {
             let tables = Tables.filter{$0.id == tableNo}
             let table = tables.first!
+            let now = self.getNowClockString()
+            let tableId = String(table.id)
+            let tableMember = String(table.member)
+            let tableType = table.type.rawValue
+            let tableStatus = table.status.rawValue
+            let fileName = "TableLog.text"
+            let tableLog = now + " id:" + tableId + " 人数:" + tableMember + " タイプ:" + tableType + " ステータス:" + tableStatus + "\n"
             switch table.status {
             case .vacan:
                 tableView.backgroundColor = UIColor.lightGray
+                self.createTextFromString(aString: tableLog, saveToDocumentsWithFileName: fileName)
             case .fill:
                 tableView.backgroundColor = UIColor.green
+                self.createTextFromString(aString: tableLog, saveToDocumentsWithFileName: fileName)
             case .accounting:
                 tableView.backgroundColor = UIColor.orange
+                self.createTextFromString(aString: tableLog, saveToDocumentsWithFileName: fileName)
             case .check:
                 tableView.backgroundColor = UIColor.red
+                self.createTextFromString(aString: tableLog, saveToDocumentsWithFileName: fileName)
             }
         }
     }
@@ -114,8 +127,7 @@ class ViewController: UIViewController {
                 UIAlertAction(title: "空席", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.vacan, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
-                UIAlertAction(title: "在席中", style: .default, handler: {(action) -> Void in
-                    self.changeTableStatus(table, ViewController.Table.Status.fill, sender.view!, sender.view?.restorationIdentifier ?? "error")})
+                UIAlertAction(title: "在席中", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.fill, sender.view!, sender.view?.restorationIdentifier ?? "error")})
             )
             alert.addAction(
                 UIAlertAction(title: "会計中", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.accounting, sender.view!, sender.view?.restorationIdentifier ?? "error")})
@@ -130,6 +142,36 @@ class ViewController: UIViewController {
         } else {
             return
         }
+    }
+    
+    func createTextFromString(aString: String, saveToDocumentsWithFileName fileName: String) {
+        
+        if let documentDirectoryFileURL = NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.userDomainMask, true).last {
+            
+            let targetTextFilePath = documentDirectoryFileURL + "/" + fileName
+            
+            guard let ouput = OutputStream(toFileAtPath: targetTextFilePath, append: true) else {
+                return
+            }
+            ouput.open()
+            
+            defer {
+                ouput.close()
+            }
+            
+            guard let data = aString.data(using: .utf8) else { return }
+            
+            _ = data.withUnsafeBytes {
+                ouput.write($0, maxLength: data.count)
+            }
+        }
+    }
+    
+    func getNowClockString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd' 'HH:mm:ss"
+        let now = Date()
+        return formatter.string(from: now)
     }
     
 
