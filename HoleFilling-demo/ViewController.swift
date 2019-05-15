@@ -71,9 +71,10 @@ class ViewController: UIViewController {
     
 
     @IBOutlet var tableCollection: [UIView]!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        
 
         // 各View(table)へtapGestureの付与
         var gestures = Array<UITapGestureRecognizer>()
@@ -85,10 +86,17 @@ class ViewController: UIViewController {
             table.addGestureRecognizer(gestures[index])
         }
         
+        Timer.scheduledTimer(
+            timeInterval: 300,
+            target: self,
+            selector: #selector(self.manageTableTime),
+            userInfo: nil,
+            repeats: true
+        )
         self.createTextFromString(aString: "Log集計開始\n", saveToDocumentsWithFileName: "TableLog.text")
     }
     
-    func changeTableStatus(_ changeTable:Table, _ status:Table.Status, _ tableView:UIView, _ tableNoStr:String) {
+    func changeTableStatus(_ changeTable:Table, _ status:Table.Status, _ tableView:UIView) {
         changeTable.status = status
         let table = changeTable
         let now = self.getNowClockString()
@@ -109,7 +117,6 @@ class ViewController: UIViewController {
                 self.createTextFromString(aString: tableLog, saveToDocumentsWithFileName: fileName)
             case .accounting:
                 tableView.backgroundColor = UIColor.orange
-                table.time = nil
                 self.createTextFromString(aString: tableLog, saveToDocumentsWithFileName: fileName)
             case .check:
                 tableView.backgroundColor = UIColor.red
@@ -129,16 +136,16 @@ class ViewController: UIViewController {
             
             let alert = UIAlertController(title: tableInfo, message: table.status.rawValue, preferredStyle: .alert)
             alert.addAction(
-                UIAlertAction(title: "空席", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.vacan, sender.view!, sender.view?.restorationIdentifier ?? "error")})
+                UIAlertAction(title: "空席", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.vacan, sender.view!)})
             )
             alert.addAction(
-                UIAlertAction(title: "在席中", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.fill, sender.view!, sender.view?.restorationIdentifier ?? "error")})
+                UIAlertAction(title: "在席中", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.fill, sender.view!)})
             )
             alert.addAction(
-                UIAlertAction(title: "会計中", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.accounting, sender.view!, sender.view?.restorationIdentifier ?? "error")})
+                UIAlertAction(title: "会計中", style: .default, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.accounting, sender.view!)})
             )
             alert.addAction(
-                UIAlertAction(title: "会計済み", style: .destructive, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.check, sender.view!, sender.view?.restorationIdentifier ?? "error")})
+                UIAlertAction(title: "会計済み", style: .destructive, handler: {(action) -> Void in self.changeTableStatus(table, ViewController.Table.Status.check, sender.view!)})
             )
             alert.addAction(
                 UIAlertAction(title: "キャンセル", style: .cancel, handler: nil)
@@ -179,14 +186,18 @@ class ViewController: UIViewController {
         return formatter.string(from: now)
     }
     
-    func manageTableTime() {
+    @objc func manageTableTime() {
         for table in Tables {
             if let tableTime = table.time {
+                let tableViews = tableCollection.filter{$0.restorationIdentifier == String(table.id)}
+                let tableView = tableViews.first!
                 let now = Date()
-                // 2時間後求める
-                let timeLimit = Date(timeInterval: 5400, since: tableTime)
-                if now < timeLimit {
-                    print("out")
+                let warn = Date(timeInterval: 5400, since: tableTime)
+                let out = Date(timeInterval: 7200, since: now)
+                if now > out {
+                    changeTableStatus(table, Table.Status.check, tableView)
+                } else if now > warn{
+                    changeTableStatus(table, Table.Status.accounting, tableView)
                 }
             } else {
                 continue
