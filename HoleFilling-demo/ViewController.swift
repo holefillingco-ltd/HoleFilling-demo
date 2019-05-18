@@ -71,10 +71,34 @@ class ViewController: UIViewController {
     
 
     @IBOutlet var tableCollection: [UIView]!
-
+    @IBOutlet weak var ResetButton: UIButton!
+    
+    @IBAction func RestTable(_ sender: Any) {
+        let alert = UIAlertController(title: "席情報をリセットしてよろしいですか？", message: "初期状態に変更します", preferredStyle: .alert)
+        alert.addAction(
+            UIAlertAction(title: "リセットする", style: .destructive, handler: {(action) -> Void in self.ResetAllTableStatus()})
+        )
+        alert.addAction(
+            UIAlertAction(title: "キャンセル", style: .cancel, handler: nil)
+        )
+        self.present(alert, animated: true)
+    }
+    
+    func ResetAllTableStatus() {
+        for table in Tables {
+            let tableViews = tableCollection.filter{$0.restorationIdentifier == String(table.id)}
+            let tableView = tableViews.first!
+            self.changeTableStatus(table, Table.Status.vacan, tableView)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        ResetButton.setTitleColor(UIColor.red, for: .normal)
+        ResetButton.layer.borderColor = UIColor.red.cgColor
+        ResetButton.layer.borderWidth = 1.0
+        ResetButton.layer.cornerRadius = 10.0
 
         // 各View(table)へtapGestureの付与
         var gestures = Array<UITapGestureRecognizer>()
@@ -87,7 +111,7 @@ class ViewController: UIViewController {
         }
         
         Timer.scheduledTimer(
-            timeInterval: 300,
+            timeInterval: 10,
             target: self,
             selector: #selector(self.manageTableTime),
             userInfo: nil,
@@ -193,7 +217,7 @@ class ViewController: UIViewController {
                 let tableView = tableViews.first!
                 let now = Date()
                 let warn = Date(timeInterval: 5400, since: tableTime)
-                let out = Date(timeInterval: 7200, since: now)
+                let out = Date(timeInterval: 7200, since: tableTime)
                 if now > out {
                     changeTableStatus(table, Table.Status.check, tableView)
                 } else if now > warn{
