@@ -105,7 +105,7 @@ class ViewController: UIViewController {
         let tableType = table.type.rawValue
         let tableStatus = table.status.rawValue
         let fileName = "TableLog.text"
-        let tableLog = now + " id:" + tableId + " 人数:" + tableMember + " タイプ:" + tableType + " ステータス:" + tableStatus + "\n"
+        let tableLog = "\(now) id: \(tableId) 人数: \(tableMember) タイプ: \(tableType) ステータス: \(tableStatus) \n"
             switch table.status {
             case .vacan:
                 tableView.backgroundColor = UIColor.lightGray
