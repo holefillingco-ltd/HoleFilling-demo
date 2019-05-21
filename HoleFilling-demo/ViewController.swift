@@ -111,7 +111,7 @@ class ViewController: UIViewController {
         }
         
         Timer.scheduledTimer(
-            timeInterval: 10,
+            timeInterval: 300,
             target: self,
             selector: #selector(self.manageTableTime),
             userInfo: nil,
